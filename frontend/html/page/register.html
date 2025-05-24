@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register | StudyMake</title>
+  <!-- <link rel="stylesheet" href="../../css/pages/register.css" /> -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4338ca;
+      --primary-light: #E0E7FF;
+      --text: #1F2937;
+      --text-light: #6B7280;
+      --border: #E5E7EB;
+      --bg: #F9FAFB;
+      --card-bg: #FFFFFF;
+      --error: #EF4444;
+    }
+
+    [data-theme="dark"] {
+      --primary: #818CF8;
+      --primary-dark: #6366F1;
+      --text: #F9FAFB;
+      --text-light: #D1D5DB;
+      --border: #374151;
+      --bg: #111827;
+      --card-bg: #1F2937;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+      line-height: 1.5;
+    }
+
+    .wrapper {
+      background-color: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid var(--border);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    form h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 1.75rem;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .input-box {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .input-box label {
+      display: block;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .input-box input {
+      width: 100%;
+      padding: 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: all 0.2s ease;
+      padding-left: 2.75rem;
+    }
+
+    .input-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .input-box i {
+      position: absolute;
+      left: 1rem;
+      top: 2.75rem;
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      padding: 0.9375rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    button[type="submit"]:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.9375rem;
+      color: var(--text-light);
+    }
+
+    .login-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .wrapper {
+        padding: 1.75rem;
+      }
+
+      form h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .input-box input {
+        padding: 0.75rem;
+        padding-left: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <form action="../../../server/route/register.php" method="post">
+      <h1>Create an Account</h1>
+
+      <div class="input-box">
+        <label for="username">Full Name</label>
+        <i class="fas fa-user"></i>
+        <input type="text" id="username" name="name" placeholder="Enter Your Full Name" required />
+      </div>
+
+      <div class="input-box">
+        <label for="email">Email Address</label>
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" name="email" placeholder="Enter Your Email Address" required />
+      </div>
+
+      <div class="input-box">
+        <label for="password">Password</label>
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" name="password" placeholder="Enter Your Password" required />
+      </div>
+
+      <button type="submit">
+        <i class="fas fa-user-plus"></i>
+        <span>Register</span>
+      </button>
+
+      <div class="login-link">
+        Already have an account? <a href="./login.html">Sign in</a>
+      </div>
+    </form>
+  </div>
+
+  <script src="../../js/pages/darkmode.js"></script>
+  <script>
+    // Simple password visibility toggle (optional)
+    document.addEventListener('DOMContentLoaded', function() {
+      const passwordInput = document.getElementById('password');
+      const passwordIcon = document.querySelector('.fa-lock');
+      
+      passwordInput.addEventListener('focus', function() {
+        passwordIcon.style.color = 'var(--primary)';
+      });
+      
+      passwordInput.addEventListener('blur', function() {
+        passwordIcon.style.color = 'var(--text-light)';
+      });
+    });
+  </script>
+</body>
+</html>
