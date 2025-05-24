@@ -48,4 +48,13 @@ class StudySessionController {
         }
         return ['success' => true, 'stats' => $stats];
     }
+
+    public function getAnalyticsData($email, $range) {
+    $stats = $this->model->fetchAnalytics($email, $range);
+    if (!$stats) {
+        return ['success' => false, 'message' => 'No data found'];
+    }
+    return ['success' => true, 'data' => $stats];
+}
+
 }

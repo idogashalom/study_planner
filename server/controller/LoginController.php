@@ -60,7 +60,7 @@ class LoginController
                     $msg = "✅ Login successful!";
                     echo "<script>
         alert(" . json_encode($msg) . ");
-        window.location.href='../../frontend/html/page/user.php';
+        window.location.href='../../frontend/html/page/sessions.php';
     </script>";
                     exit();
                 } else {

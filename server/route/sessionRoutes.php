@@ -68,5 +68,15 @@ if ($method === 'DELETE') {
   exit;
 }
 
+
+
+
 http_response_code(405);
 echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
+
+if (isset($_GET['action']) && $_GET['action'] === 'analytics') {
+    $range = $_GET['range'] ?? 'week'; // 'week', 'month', 'semester', 'all'
+    $result = $controller->getAnalyticsData($email, $range);
+    echo json_encode($result);
+    exit;
+}

@@ -370,7 +370,7 @@ if (!isset($_SESSION['email'])) {
       }
 
       .session-actions {
-        margin-top: 1rem  ;
+        margin-top: 1rem;
         grid-column: 2;
         justify-content: flex-end;
       }
@@ -531,187 +531,203 @@ if (!isset($_SESSION['email'])) {
 
   <script src="../../js/pages/sidebar.js"></script>
   <script>
-   // js/pages/sessions.js
+    // js/pages/sessions.js
 
-document.addEventListener('DOMContentLoaded', function() {
-  const timerDisplay = document.getElementById('timerDisplay');
-  const startBtn = document.getElementById('startTimer');
-  const pauseBtn = document.getElementById('pauseTimer');
-  const resetBtn = document.getElementById('resetTimer');
-  const modeBtns = document.querySelectorAll('.mode-btn');
-  const sessionForm = document.getElementById('sessionForm');
-  const sessionsList = document.getElementById('sessionsList');
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const emptyState = document.getElementById('emptyState');
+    document.addEventListener('DOMContentLoaded', function() {
+      const timerDisplay = document.getElementById('timerDisplay');
+      const startBtn = document.getElementById('startTimer');
+      const pauseBtn = document.getElementById('pauseTimer');
+      const resetBtn = document.getElementById('resetTimer');
+      const modeBtns = document.querySelectorAll('.mode-btn');
+      const sessionForm = document.getElementById('sessionForm');
+      const sessionsList = document.getElementById('sessionsList');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const emptyState = document.getElementById('emptyState');
 
-  let timer;
-  let timeLeft = 25 * 60;
-  let isRunning = false;
-  let currentMode = 'pomodoro';
-  let pomodoroCount = 0;
+      let timer;
+      let timeLeft = 25 * 60;
+      let isRunning = false;
+      let currentMode = 'pomodoro';
+      let pomodoroCount = 0;
 
-  const modes = {
-    pomodoro: 25 * 60,
-    shortBreak: 5 * 60,
-    longBreak: 15 * 60
-  };
+      const modes = {
+        pomodoro: 25 * 60,
+        shortBreak: 5 * 60,
+        longBreak: 15 * 60
+      };
 
-  updateDisplay();
-  fetchSessions('all');
+      updateDisplay();
+      fetchSessions('all');
 
-  startBtn.addEventListener('click', startTimer);
-  pauseBtn.addEventListener('click', pauseTimer);
-  resetBtn.addEventListener('click', resetTimer);
+      startBtn.addEventListener('click', startTimer);
+      pauseBtn.addEventListener('click', pauseTimer);
+      resetBtn.addEventListener('click', resetTimer);
 
-  modeBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      modeBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      currentMode = this.dataset.mode;
-      resetTimer();
-    });
-  });
-
-  sessionForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const title = document.getElementById('sessionTitle').value.trim();
-    const subject = document.getElementById('sessionSubject').value.trim();
-    const durationInput = document.getElementById('sessionDuration').value;
-    const goal = document.getElementById('sessionGoal').value.trim();
-    const duration = parseInt(durationInput, 10);
-
-    if (!title || isNaN(duration) || duration <= 0) {
-      alert('Please enter a valid title and duration.');
-      return;
-    }
-
-    addSessionAPI({ title, subject, duration, goal });
-  });
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      fetchSessions(this.dataset.filter);
-    });
-  });
-
-  // API Calls
-
-  function addSessionAPI(sessionData) {
-    fetch('../../../server/route/sessionRoutes.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sessionData)
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          fetchSessions('all');
-          sessionForm.reset();
-          if (!isRunning) {
-            timeLeft = sessionData.duration * 60;
-            updateDisplay();
-            startTimer();
-          }
-        } else {
-          alert('Failed to add session');
-        }
-      })
-      .catch(() => alert('Error adding session'));
-  }
-
-  function fetchSessions(filter = 'all') {
-    fetch(`../../../server/route/sessionRoutes.php?filter=${filter}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          renderSessions(data.sessions);
-        }
-      })
-      .catch(() => {
-        sessionsList.innerHTML = '<p>Error loading sessions</p>';
+      modeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          modeBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentMode = this.dataset.mode;
+          resetTimer();
+        });
       });
-  }
 
-  function fetchSessionStats() {
-  fetch('../../../server/route/sessionRoutes.php?action=stats')
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        // Update your stats card with actual data
-        const statsCard = document.querySelector('.timer-card[style*="#10B981"]');
-        if (statsCard) {
-          const statsHtml = `
-            <h3><i class='bx bx-stats'></i> Session Stats</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-              <div>
-                <div style="font-size: 2.5rem; font-weight: 600;">${data.pomodorosToday}</div>
-                <div style="font-size: 0.875rem;">Pomodoros Today</div>
-              </div>
-              <div>
-                <div style="font-size: 2.5rem; font-weight: 600;">${data.totalFocus}</div>
-                <div style="font-size: 0.875rem;">Total Focus</div>
-              </div>
-            </div>
-          `;
-          statsCard.innerHTML = statsHtml;
+      sessionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const title = document.getElementById('sessionTitle').value.trim();
+        const subject = document.getElementById('sessionSubject').value.trim();
+        const durationInput = document.getElementById('sessionDuration').value;
+        const goal = document.getElementById('sessionGoal').value.trim();
+        const duration = parseInt(durationInput, 10);
+
+        if (!title || isNaN(duration) || duration <= 0) {
+          alert('Please enter a valid title and duration.');
+          return;
         }
+
+        addSessionAPI({
+          title,
+          subject,
+          duration,
+          goal
+        });
+      });
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          fetchSessions(this.dataset.filter);
+        });
+      });
+
+      // API Calls
+
+      function addSessionAPI(sessionData) {
+        fetch('../../../server/route/sessionRoutes.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(sessionData)
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              fetchSessions('all');
+              sessionForm.reset();
+              if (!isRunning) {
+                timeLeft = sessionData.duration * 60;
+                updateDisplay();
+                startTimer();
+              }
+            } else {
+              alert('Failed to add session');
+            }
+          })
+          .catch(() => alert('Error adding session'));
       }
-    })
-    .catch(() => {
-      console.log('Failed to fetch session stats');
-    });
-}
 
+      function fetchSessions(filter = 'all') {
+        fetch(`../../../server/route/sessionRoutes.php?filter=${filter}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              renderSessions(data.sessions);
+            }
+          })
+          .catch(() => {
+            sessionsList.innerHTML = '<p>Error loading sessions</p>';
+          });
+      }
 
-  function updateStatusAPI(id, status) {
-    fetch('../../../server/route/sessionRoutes.php', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) fetchSessions('all');
-        else alert('Failed to update session');
-      });
-  }
+      function fetchSessionStats() {
+        fetch('../../../server/route/sessionRoutes.php?stats=true')
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.stats) {
+              const stats = data.stats;
+              const statsCard = document.querySelector('.timer-card[style*="#10B981"]');
+              if (statsCard) {
+                const statsHtml = `
+      <h3><i class='bx bx-stats'></i> Session Stats</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 600;">${stats.pomodorosToday || 0}</div>
+          <div style="font-size: 0.875rem;">Pomodoros Today</div>
+        </div>
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 600;">${stats.totalFocusMins || '0h 0m'}</div>
+          <div style="font-size: 0.875rem;">Total Focus</div>
+        </div>
+      </div>
+    `;
+                statsCard.innerHTML = statsHtml;
+              }
+            }
 
-  function deleteSessionAPI(id) {
-    fetch('../../../server/route/sessionRoutes.php', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `id=${id}`
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) fetchSessions('all');
-        else alert('Failed to delete session');
-      });
-  }
+          })
+          .catch(() => {
+            console.log('Failed to fetch session stats');
+          });
+      }
 
-  // Render UI
+      fetchSessionStats();
 
-  function renderSessions(sessions) {
-    if (!sessions.length) {
-      emptyState.style.display = 'block';
-      sessionsList.innerHTML = '';
-      return;
-    }
+      function updateStatusAPI(id, status) {
+        fetch('../../../server/route/sessionRoutes.php', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              id,
+              status
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) fetchSessions('all');
+            else alert('Failed to update session');
+          });
+      }
 
-    emptyState.style.display = 'none';
-    sessionsList.innerHTML = '';
+      function deleteSessionAPI(id) {
+        fetch('../../../server/route/sessionRoutes.php', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `id=${id}`
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) fetchSessions('all');
+            else alert('Failed to delete session');
+          });
+      }
 
-    sessions.forEach(session => {
-      const statusClass = session.status === 'active' ? 'status-active' : 'status-completed';
-      const statusText = session.status === 'active' ? 'In Progress' : 'Completed';
+      // Render UI
 
-      const sessionEl = document.createElement('div');
-      sessionEl.className = 'session-item';
+      function renderSessions(sessions) {
+        if (!sessions.length) {
+          emptyState.style.display = 'block';
+          sessionsList.innerHTML = '';
+          return;
+        }
 
-      sessionEl.innerHTML = `
+        emptyState.style.display = 'none';
+        sessionsList.innerHTML = '';
+
+        sessions.forEach(session => {
+          const statusClass = session.status === 'active' ? 'status-active' : 'status-completed';
+          const statusText = session.status === 'active' ? 'In Progress' : 'Completed';
+
+          const sessionEl = document.createElement('div');
+          sessionEl.className = 'session-item';
+
+          sessionEl.innerHTML = `
         <div class="session-status ${statusClass}"></div>
         <div class="session-details">
           <span class="session-title">${escapeHTML(session.title)}</span>
@@ -732,127 +748,126 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
 
-      sessionsList.appendChild(sessionEl);
-    });
+          sessionsList.appendChild(sessionEl);
+        });
 
-    // Attach event listeners for action buttons
-    sessionsList.querySelectorAll('.pause-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        const id = e.currentTarget.dataset.id;
-        updateStatusAPI(id, 'active');  // You could implement pause logic if needed
-        alert('Pause feature to be implemented');
-      });
-    });
+        // Attach event listeners for action buttons
+        sessionsList.querySelectorAll('.pause-btn').forEach(btn => {
+          btn.addEventListener('click', e => {
+            const id = e.currentTarget.dataset.id;
+            updateStatusAPI(id, 'active'); // You could implement pause logic if needed
+            alert('Pause feature to be implemented');
+          });
+        });
 
-    sessionsList.querySelectorAll('.complete-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        const id = e.currentTarget.dataset.id;
-        updateStatusAPI(id, 'completed');
-      });
-    });
+        sessionsList.querySelectorAll('.complete-btn').forEach(btn => {
+          btn.addEventListener('click', e => {
+            const id = e.currentTarget.dataset.id;
+            updateStatusAPI(id, 'completed');
+          });
+        });
 
-    sessionsList.querySelectorAll('.restart-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        const id = e.currentTarget.dataset.id;
-        updateStatusAPI(id, 'active');
-      });
-    });
+        sessionsList.querySelectorAll('.restart-btn').forEach(btn => {
+          btn.addEventListener('click', e => {
+            const id = e.currentTarget.dataset.id;
+            updateStatusAPI(id, 'active');
+          });
+        });
 
-    sessionsList.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        if (confirm('Delete this session?')) {
-          const id = e.currentTarget.dataset.id;
-          deleteSessionAPI(id);
-        }
-      });
-    });
-  }
-
-   fetchSessionStats();
-
-
-  // Timer functions same as your original code...
-
-  function startTimer() {
-    if (!isRunning) {
-      isRunning = true;
-      timer = setInterval(updateTimer, 1000);
-      startBtn.disabled = true;
-      pauseBtn.disabled = false;
-      resetBtn.disabled = false;
-    }
-  }
-
-  function pauseTimer() {
-    if (isRunning) {
-      clearInterval(timer);
-      isRunning = false;
-      startBtn.disabled = false;
-      pauseBtn.disabled = true;
-    }
-  }
-
-  function resetTimer() {
-    pauseTimer();
-    timeLeft = modes[currentMode];
-    updateDisplay();
-    resetBtn.disabled = true;
-  }
-
-  function updateTimer() {
-    timeLeft--;
-    updateDisplay();
-
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      isRunning = false;
-      startBtn.disabled = false;
-      pauseBtn.disabled = true;
-      resetBtn.disabled = false;
-
-      if (currentMode === 'pomodoro') {
-        pomodoroCount++;
-        if (pomodoroCount % 4 === 0) {
-          currentMode = 'longBreak';
-        } else {
-          currentMode = 'shortBreak';
-        }
-      } else {
-        currentMode = 'pomodoro';
+        sessionsList.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', e => {
+            if (confirm('Delete this session?')) {
+              const id = e.currentTarget.dataset.id;
+              deleteSessionAPI(id);
+            }
+          });
+        });
       }
 
-      modeBtns.forEach(b => b.classList.remove('active'));
-      document.querySelector(`.mode-btn[data-mode="${currentMode}"]`).classList.add('active');
 
-      timeLeft = modes[currentMode];
-      updateDisplay();
 
-      // Notify user
-      alert(`Time for ${currentMode.replace(/([A-Z])/g, ' $1').toLowerCase()}!`);
-    }
-  }
 
-  function updateDisplay() {
-    const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-    const seconds = (timeLeft % 60).toString().padStart(2, '0');
-    timerDisplay.textContent = `${minutes}:${seconds}`;
-  }
+      // Timer functions same as your original code...
 
-  // Escape HTML to prevent XSS
-  function escapeHTML(text) {
-    return text.replace(/[&<>"']/g, function(m) {
-      return {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      }[m];
+      function startTimer() {
+        if (!isRunning) {
+          isRunning = true;
+          timer = setInterval(updateTimer, 1000);
+          startBtn.disabled = true;
+          pauseBtn.disabled = false;
+          resetBtn.disabled = false;
+        }
+      }
+
+      function pauseTimer() {
+        if (isRunning) {
+          clearInterval(timer);
+          isRunning = false;
+          startBtn.disabled = false;
+          pauseBtn.disabled = true;
+        }
+      }
+
+      function resetTimer() {
+        pauseTimer();
+        timeLeft = modes[currentMode];
+        updateDisplay();
+        resetBtn.disabled = true;
+      }
+
+      function updateTimer() {
+        timeLeft--;
+        updateDisplay();
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          isRunning = false;
+          startBtn.disabled = false;
+          pauseBtn.disabled = true;
+          resetBtn.disabled = false;
+
+          if (currentMode === 'pomodoro') {
+            pomodoroCount++;
+            if (pomodoroCount % 4 === 0) {
+              currentMode = 'longBreak';
+            } else {
+              currentMode = 'shortBreak';
+            }
+          } else {
+            currentMode = 'pomodoro';
+          }
+
+          modeBtns.forEach(b => b.classList.remove('active'));
+          document.querySelector(`.mode-btn[data-mode="${currentMode}"]`).classList.add('active');
+
+          timeLeft = modes[currentMode];
+          updateDisplay();
+
+          // Notify user
+          alert(`Time for ${currentMode.replace(/([A-Z])/g, ' $1').toLowerCase()}!`);
+        }
+      }
+
+      function updateDisplay() {
+        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const seconds = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `${minutes}:${seconds}`;
+      }
+
+      // Escape HTML to prevent XSS
+      function escapeHTML(text) {
+        return text.replace(/[&<>"']/g, function(m) {
+          return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+          } [m];
+        });
+      }
+
     });
-  }
-
-});
-
   </script>
 
 </body>

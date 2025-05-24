@@ -5,15 +5,15 @@
   <div class="sidebar-header">
     <h2>StudyMake</h2>
   </div>
-  
+
   <nav class="sidebar-nav">
     <ul>
-      <li>
+      <!-- <li>
         <a href="dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : '' ?>">
           <i class='bx bx-home'></i>
           <span>Dashboard</span>
         </a>
-      </li>
+      </li> -->
       <!-- <li>
         <a href="profile.php" class="<?php echo basename($_SERVER['PHP_SELF']) === 'profile.php' ? 'active' : '' ?>">
           <i class='bx bx-user'></i>
@@ -45,9 +45,10 @@
         </a>
       </li>
     </ul>
-    
+
     <div class="sidebar-footer">
-      <a href="../../../server/controller/pages/logout.php" class="logout-btn">
+      <a href="../../../server/route/logoutRoutes.php" onclick="return confirm('Are you sure you want to logout?')" class="logout-btn">
+
         <i class='bx bx-log-out'></i>
         <span>Log Out</span>
       </a>
