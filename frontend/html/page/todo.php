@@ -288,139 +288,168 @@ if (!isset($_SESSION['email'])) {
   </div>
 
   <script src="../../js/pages/sidebar.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const todoForm = document.getElementById('addTodoForm');
-  const todoInput = document.getElementById('todoInput');
-  const todoList = document.getElementById('todoList');
-  const filterBtns = document.querySelectorAll('.filter-btn');
+  <script>
+    // Wait until the page content (DOM) has fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
 
-  // Fetch and render todos from backend on load
-  fetchTodos();
+      // Get references to key HTML elements
+      const todoForm = document.getElementById('addTodoForm'); // The form used to add new tasks
+      const todoInput = document.getElementById('todoInput'); // The input box for typing the task
+      const todoList = document.getElementById('todoList'); // The container <ul> or <div> that shows all tasks
+      const filterBtns = document.querySelectorAll('.filter-btn'); // Buttons used to filter tasks (All, Active, Completed)
 
-  todoForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const todoText = todoInput.value.trim();
+      // Fetch tasks from backend and display them when the page loads
+      fetchTodos();
 
-    if (todoText) {
-      fetch('../../../server/route/todoRoutes.php?action=add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task: todoText })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          fetchTodos(); // Refresh list
-          todoInput.value = '';
+      // When the user submits the form to add a new task
+      todoForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default page reload on form submission
+        const todoText = todoInput.value.trim(); // Get the task text, removing extra spaces
+
+        // If the task isn't empty
+        if (todoText) {
+          fetch('../../../server/route/todoRoutes.php?action=add', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                task: todoText // Send the task text as JSON to the PHP backend
+              })
+            })
+            .then(res => res.json()) // Convert response to JSON
+            .then(res => {
+              if (res.success) {
+                fetchTodos(); // Refresh the task list
+                todoInput.value = ''; // Clear the input box
+              }
+            });
         }
       });
-    }
-  });
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', function () {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      filterTodos(this.dataset.filter);
-    });
-  });
-
-  todoList.addEventListener('click', function (e) {
-    const target = e.target;
-    const todoItem = target.closest('.todo-item');
-    const todoId = todoItem?.dataset.id;
-
-    if (!todoItem || !todoId) return;
-
-    // Toggle completed
-    if (target.classList.contains('todo-checkbox')) {
-      const completed = target.checked;
-      fetch(`../../../server/route/todoRoutes.php?action=toggle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: todoId, completed })
-      }).then(() => {
-        todoItem.querySelector('.todo-text').classList.toggle('completed', completed);
-      });
-    }
-
-    // Delete task
-    if (target.classList.contains('delete-btn') || target.closest('.delete-btn')) {
-      fetch(`../../../server/route/todoRoutes.php?action=delete&id=${todoId}`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.success) {
-            todoItem.remove();
-          }
+      // Filter buttons (All, Active, Completed)
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(b => b.classList.remove('active')); // Remove 'active' class from all
+          this.classList.add('active'); // Highlight the clicked one
+          filterTodos(this.dataset.filter); // Call filter function based on the button's data-filter value
         });
-    }
+      });
 
-    // Edit task
-    if (target.classList.contains('edit-btn') || target.closest('.edit-btn')) {
-      const textSpan = todoItem.querySelector('.todo-text');
-      const newText = prompt('Edit your task:', textSpan.textContent);
-      if (newText && newText.trim() !== '') {
-        fetch(`../../../server/route/todoRoutes.php?action=update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: todoId, task: newText.trim() })
-        }).then(res => res.json())
-          .then(res => {
-            if (res.success) {
-              textSpan.textContent = newText.trim();
-            }
+      // Handle clicks inside the to-do list (for toggle, delete, or edit)
+      todoList.addEventListener('click', function(e) {
+        const target = e.target;
+        const todoItem = target.closest('.todo-item'); // Find the <li> or container of the clicked item
+        const todoId = todoItem?.dataset.id; // Get the task ID from data-id
+
+        if (!todoItem || !todoId) return; // Exit if nothing was clicked
+
+        // ✅ Toggle Completed Checkbox
+        if (target.classList.contains('todo-checkbox')) {
+          const completed = target.checked;
+
+          fetch(`../../../server/route/todoRoutes.php?action=toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              id: todoId,
+              completed
+            })
+          }).then(() => {
+            // Add/remove the 'completed' class based on the checkbox
+            todoItem.querySelector('.todo-text').classList.toggle('completed', completed);
+          });
+        }
+
+        // ❌ Delete a Task
+        if (target.classList.contains('delete-btn') || target.closest('.delete-btn')) {
+          fetch(`../../../server/route/todoRoutes.php?action=delete&id=${todoId}`)
+            .then(res => res.json())
+            .then(res => {
+              if (res.success) {
+                todoItem.remove(); // Remove the item from the list
+              }
+            });
+        }
+
+        // ✏️ Edit a Task
+        if (target.classList.contains('edit-btn') || target.closest('.edit-btn')) {
+          const textSpan = todoItem.querySelector('.todo-text'); // Current task text
+          const newText = prompt('Edit your task:', textSpan.textContent); // Ask for new text
+          if (newText && newText.trim() !== '') {
+            fetch(`../../../server/route/todoRoutes.php?action=update`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  id: todoId,
+                  task: newText.trim()
+                })
+              }).then(res => res.json())
+              .then(res => {
+                if (res.success) {
+                  textSpan.textContent = newText.trim(); // Update the text on screen
+                }
+              });
+          }
+        }
+      });
+
+      // 🔄 Fetch all tasks from the backend and render them
+      function fetchTodos() {
+        fetch('../../../server/route/todoRoutes.php?action=get')
+          .then(res => res.json())
+          .then(todos => {
+            todoList.innerHTML = ''; // Clear existing list
+            todos.forEach(todo => renderTodo(todo)); // Display each task
           });
       }
-    }
-  });
 
-  function fetchTodos() {
-    fetch('../../../server/route/todoRoutes.php?action=get')
-      .then(res => res.json())
-      .then(todos => {
-        todoList.innerHTML = '';
-        todos.forEach(todo => renderTodo(todo));
-      });
-  }
+      // 🧱 Display one task in the list
+      function renderTodo(todo) {
+        const li = document.createElement('li');
+        li.className = 'todo-item';
+        li.dataset.id = todo.id;
 
-  function renderTodo(todo) {
-    const li = document.createElement('li');
-    li.className = 'todo-item';
-    li.dataset.id = todo.id;
-    li.innerHTML = `
-      <input type="checkbox" class="todo-checkbox" ${todo.completed == 1 ? 'checked' : ''}>
-      <span class="todo-text ${todo.completed == 1 ? 'completed' : ''}">${todo.task}</span>
-      <span class="todo-date">${new Date(todo.created_at).toLocaleDateString()}</span>
-      <div class="todo-actions">
-        <button class="action-btn edit-btn"><i class='bx bx-edit'></i></button>
-        <button class="action-btn delete-btn"><i class='bx bx-trash'></i></button>
-      </div>
-    `;
-    todoList.appendChild(li);
-  }
+        li.innerHTML = `
+        <input type="checkbox" class="todo-checkbox" ${todo.completed == 1 ? 'checked' : ''}>
+        <span class="todo-text ${todo.completed == 1 ? 'completed' : ''}">${todo.task}</span>
+        <span class="todo-date">${new Date(todo.created_at).toLocaleDateString()}</span>
+        <div class="todo-actions">
+          <button class="action-btn edit-btn"><i class='bx bx-edit'></i></button>
+          <button class="action-btn delete-btn"><i class='bx bx-trash'></i></button>
+        </div>
+      `;
 
-  function filterTodos(filter) {
-    const items = todoList.querySelectorAll('.todo-item');
+        todoList.appendChild(li); // Add to the page
+      }
 
-    items.forEach(item => {
-      const isCompleted = item.querySelector('.todo-checkbox').checked;
+      // 🔍 Filter tasks based on status (all, active, completed)
+      function filterTodos(filter) {
+        const items = todoList.querySelectorAll('.todo-item');
 
-      switch (filter) {
-        case 'all':
-          item.style.display = 'flex';
-          break;
-        case 'active':
-          item.style.display = isCompleted ? 'none' : 'flex';
-          break;
-        case 'completed':
-          item.style.display = isCompleted ? 'flex' : 'none';
-          break;
+        items.forEach(item => {
+          const isCompleted = item.querySelector('.todo-checkbox').checked;
+
+          switch (filter) {
+            case 'all':
+              item.style.display = 'flex';
+              break;
+            case 'active':
+              item.style.display = isCompleted ? 'none' : 'flex';
+              break;
+            case 'completed':
+              item.style.display = isCompleted ? 'flex' : 'none';
+              break;
+          }
+        });
       }
     });
-  }
-});
-</script>
+  </script>
+
 
 
 </body>
