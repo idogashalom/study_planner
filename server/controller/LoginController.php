@@ -98,3 +98,102 @@ class LoginController
         }
     }
 }
+
+
+// <?php
+
+// namespace Controller;
+
+// session_start();
+
+// require_once __DIR__ . '/../config/database.php';
+// require_once __DIR__ . '/../model/user.php';
+
+// use Config\Database;
+// use Model\User;
+// use PDOException;
+
+// class LoginController
+// {
+//     public function login()
+//     {
+//         // Check if request is POST
+//         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+//             // Sanitize and collect form data
+//             $formData = [
+//                 'email' => trim($_POST['email'] ?? ''),
+//                 'password' => $_POST['password'] ?? ''
+//             ];
+
+//             // If required fields are empty
+//             if (empty($formData['email']) || empty($formData['password'])) {
+//                 $this->showAlert("Please fill in both fields.", 'error', '../../frontend/html/page/login.html');
+//                 return;
+//             }
+
+//             try {
+//                 // Connect to DB and load user
+//                 $db = new Database();
+//                 $conn = $db->getConnection();
+//                 $user = new User($conn);
+
+//                 // Get user by email
+//                 $userData = $user->getUserByEmail($formData['email']);
+
+//                 // If user not found
+//                 if (!$userData) {
+//                     $this->showAlert("❌ Invalid email or password.", 'error', '../../frontend/html/page/login.html');
+//                     return;
+//                 }
+
+//                 // Check password
+//                 if (password_verify($formData['password'], $userData['password'])) {
+//                     // Start session
+//                     $_SESSION['_id'] = $userData['id'];
+//                     $_SESSION['email'] = $userData['email'];
+//                     $_SESSION['name'] = $userData['name'];
+
+//                     // Success alert and redirect
+//                     $this->showAlert("✅ Login successful!", 'success', '../../frontend/html/page/sessions.php');
+//                 } else {
+//                     // Wrong password
+//                     $this->showAlert("❌ Invalid Email or password.", 'error', '../../frontend/html/page/login.html');
+//                 }
+
+//             } catch (PDOException $e) {
+//                 $this->showAlert("Database Error: " . $e->getMessage(), 'error', '../../frontend/html/page/login.html');
+//             }
+
+//         } else {
+//             // Invalid access method
+//             $this->showAlert("Invalid request method.", 'error', '../../frontend/html/page/login.html');
+//         }
+//     }
+
+//     /**
+//      * Show a SweetAlert2 message and redirect
+//      *
+//      * @param string $message The alert message
+//      * @param string $type success|error|info|warning
+//      * @param string $redirectUrl Where to go after alert
+//      */
+//     private function showAlert($message, $type, $redirectUrl)
+//     {
+//         echo "
+//         <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+//         <script>
+//             window.onload = function () {
+//                 Swal.fire({
+//                     icon: '$type',
+//                     title: " . json_encode($message) . ",
+//                     timer: 2000,
+//                     showConfirmButton: false
+//                 }).then(() => {
+//                     window.location.href = '$redirectUrl';
+//                 });
+//             };
+//         </script>";
+//         exit();
+//     }
+// }

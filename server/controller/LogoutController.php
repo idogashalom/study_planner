@@ -18,7 +18,7 @@ class LogoutController
         $msg = "✅ You have been logged out.";
         echo "<script>
             alert(" . json_encode($msg) . ");
-            window.location.href='../../frontend/html/page/login.html';
+            window.location.href='../../index.html';
         </script>";
         exit(); // Stop script execution after redirect
     }
