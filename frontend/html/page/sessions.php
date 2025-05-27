@@ -531,9 +531,9 @@ if (!isset($_SESSION['email'])) {
 
   <script src="../../js/pages/sidebar.js"></script>
   <script>
-    // js/pages/sessions.js
-
+    // Wait until the entire HTML page content is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
+      // Selecting key DOM elements
       const timerDisplay = document.getElementById('timerDisplay');
       const startBtn = document.getElementById('startTimer');
       const pauseBtn = document.getElementById('pauseTimer');
@@ -544,48 +544,57 @@ if (!isset($_SESSION['email'])) {
       const filterBtns = document.querySelectorAll('.filter-btn');
       const emptyState = document.getElementById('emptyState');
 
-      let timer;
-      let timeLeft = 25 * 60;
-      let isRunning = false;
-      let currentMode = 'pomodoro';
-      let pomodoroCount = 0;
+      // Timer state variables
+      let timer; // holds the timer interval
+      let timeLeft = 25 * 60; // default time (25 minutes in seconds)
+      let isRunning = false; // flag to check if timer is running
+      let currentMode = 'pomodoro'; // current mode (pomodoro, shortBreak, longBreak)
+      let pomodoroCount = 0; // tracks completed pomodoros
 
+      // Time settings for each mode
       const modes = {
         pomodoro: 25 * 60,
         shortBreak: 5 * 60,
         longBreak: 15 * 60
       };
 
+      // Initialize display and session list
       updateDisplay();
       fetchSessions('all');
 
+      // Timer control buttons
       startBtn.addEventListener('click', startTimer);
       pauseBtn.addEventListener('click', pauseTimer);
       resetBtn.addEventListener('click', resetTimer);
 
+      // Handle changing between Pomodoro modes (Pomodoro / Short Break / Long Break)
       modeBtns.forEach(btn => {
         btn.addEventListener('click', function() {
           modeBtns.forEach(b => b.classList.remove('active'));
           this.classList.add('active');
           currentMode = this.dataset.mode;
-          resetTimer();
+          resetTimer(); // reset timer when mode changes
         });
       });
 
+      // Handle session form submission
       sessionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+        e.preventDefault(); // prevent default form submission
 
+        // Get user input
         const title = document.getElementById('sessionTitle').value.trim();
         const subject = document.getElementById('sessionSubject').value.trim();
         const durationInput = document.getElementById('sessionDuration').value;
         const goal = document.getElementById('sessionGoal').value.trim();
         const duration = parseInt(durationInput, 10);
 
+        // Validate input
         if (!title || isNaN(duration) || duration <= 0) {
           alert('Please enter a valid title and duration.');
           return;
         }
 
+        // Send session to backend
         addSessionAPI({
           title,
           subject,
@@ -594,6 +603,7 @@ if (!isset($_SESSION['email'])) {
         });
       });
 
+      // Filter buttons (All, Active, Completed)
       filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
           filterBtns.forEach(b => b.classList.remove('active'));
@@ -602,8 +612,11 @@ if (!isset($_SESSION['email'])) {
         });
       });
 
-      // API Calls
+      // ====================
+      // BACKEND API METHODS
+      // ====================
 
+      // Send new session to the backend
       function addSessionAPI(sessionData) {
         fetch('../../../server/route/sessionRoutes.php', {
             method: 'POST',
@@ -615,12 +628,12 @@ if (!isset($_SESSION['email'])) {
           .then(res => res.json())
           .then(data => {
             if (data.success) {
-              fetchSessions('all');
-              sessionForm.reset();
+              fetchSessions('all'); // Refresh session list
+              sessionForm.reset(); // Clear form
               if (!isRunning) {
-                timeLeft = sessionData.duration * 60;
+                timeLeft = sessionData.duration * 60; // Set timer based on session
                 updateDisplay();
-                startTimer();
+                startTimer(); // Start timer automatically
               }
             } else {
               alert('Failed to add session');
@@ -629,19 +642,19 @@ if (!isset($_SESSION['email'])) {
           .catch(() => alert('Error adding session'));
       }
 
+      // Get session list based on filter (all/active/completed)
       function fetchSessions(filter = 'all') {
         fetch(`../../../server/route/sessionRoutes.php?filter=${filter}`)
           .then(res => res.json())
           .then(data => {
-            if (data.success) {
-              renderSessions(data.sessions);
-            }
+            if (data.success) renderSessions(data.sessions);
           })
           .catch(() => {
             sessionsList.innerHTML = '<p>Error loading sessions</p>';
           });
       }
 
+      // Fetch and display session statistics
       function fetchSessionStats() {
         fetch('../../../server/route/sessionRoutes.php?stats=true')
           .then(res => res.json())
@@ -650,31 +663,28 @@ if (!isset($_SESSION['email'])) {
               const stats = data.stats;
               const statsCard = document.querySelector('.timer-card[style*="#10B981"]');
               if (statsCard) {
-                const statsHtml = `
-      <h3><i class='bx bx-stats'></i> Session Stats</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-        <div>
-          <div style="font-size: 2.5rem; font-weight: 600;">${stats.pomodorosToday || 0}</div>
-          <div style="font-size: 0.875rem;">Pomodoros Today</div>
-        </div>
-        <div>
-          <div style="font-size: 2.5rem; font-weight: 600;">${stats.totalFocusMins || '0h 0m'}</div>
-          <div style="font-size: 0.875rem;">Total Focus</div>
-        </div>
-      </div>
-    `;
-                statsCard.innerHTML = statsHtml;
+                statsCard.innerHTML = `
+              <h3><i class='bx bx-stats'></i> Session Stats</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div>
+                  <div style="font-size: 2.5rem; font-weight: 600;">${stats.pomodorosToday || 0}</div>
+                  <div style="font-size: 0.875rem;">Pomodoros Today</div>
+                </div>
+                <div>
+                  <div style="font-size: 2.5rem; font-weight: 600;">${stats.totalFocusMins || '0h 0m'}</div>
+                  <div style="font-size: 0.875rem;">Total Focus</div>
+                </div>
+              </div>
+            `;
               }
             }
-
           })
-          .catch(() => {
-            console.log('Failed to fetch session stats');
-          });
+          .catch(() => console.log('Failed to fetch session stats'));
       }
 
-      fetchSessionStats();
+      fetchSessionStats(); // Call once when page loads
 
+      // Update session status in backend
       function updateStatusAPI(id, status) {
         fetch('../../../server/route/sessionRoutes.php', {
             method: 'PUT',
@@ -693,6 +703,7 @@ if (!isset($_SESSION['email'])) {
           });
       }
 
+      // Delete session by ID
       function deleteSessionAPI(id) {
         fetch('../../../server/route/sessionRoutes.php', {
             method: 'DELETE',
@@ -708,8 +719,11 @@ if (!isset($_SESSION['email'])) {
           });
       }
 
-      // Render UI
+      // ====================
+      // UI RENDERING
+      // ====================
 
+      // Render all session items
       function renderSessions(sessions) {
         if (!sessions.length) {
           emptyState.style.display = 'block';
@@ -751,11 +765,11 @@ if (!isset($_SESSION['email'])) {
           sessionsList.appendChild(sessionEl);
         });
 
-        // Attach event listeners for action buttons
+        // Attach button event listeners
         sessionsList.querySelectorAll('.pause-btn').forEach(btn => {
           btn.addEventListener('click', e => {
             const id = e.currentTarget.dataset.id;
-            updateStatusAPI(id, 'active'); // You could implement pause logic if needed
+            updateStatusAPI(id, 'active');
             alert('Pause feature to be implemented');
           });
         });
@@ -784,11 +798,11 @@ if (!isset($_SESSION['email'])) {
         });
       }
 
+      // ====================
+      // TIMER FUNCTIONS
+      // ====================
 
-
-
-      // Timer functions same as your original code...
-
+      // Start the countdown timer
       function startTimer() {
         if (!isRunning) {
           isRunning = true;
@@ -799,6 +813,7 @@ if (!isset($_SESSION['email'])) {
         }
       }
 
+      // Pause the countdown
       function pauseTimer() {
         if (isRunning) {
           clearInterval(timer);
@@ -808,6 +823,7 @@ if (!isset($_SESSION['email'])) {
         }
       }
 
+      // Reset timer to current mode
       function resetTimer() {
         pauseTimer();
         timeLeft = modes[currentMode];
@@ -815,6 +831,7 @@ if (!isset($_SESSION['email'])) {
         resetBtn.disabled = true;
       }
 
+      // Update countdown every second
       function updateTimer() {
         timeLeft--;
         updateDisplay();
@@ -826,17 +843,15 @@ if (!isset($_SESSION['email'])) {
           pauseBtn.disabled = true;
           resetBtn.disabled = false;
 
+          // Switch to next mode
           if (currentMode === 'pomodoro') {
             pomodoroCount++;
-            if (pomodoroCount % 4 === 0) {
-              currentMode = 'longBreak';
-            } else {
-              currentMode = 'shortBreak';
-            }
+            currentMode = (pomodoroCount % 4 === 0) ? 'longBreak' : 'shortBreak';
           } else {
             currentMode = 'pomodoro';
           }
 
+          // Update active mode button
           modeBtns.forEach(b => b.classList.remove('active'));
           document.querySelector(`.mode-btn[data-mode="${currentMode}"]`).classList.add('active');
 
@@ -848,13 +863,14 @@ if (!isset($_SESSION['email'])) {
         }
       }
 
+      // Show time in mm:ss format
       function updateDisplay() {
         const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
         const seconds = (timeLeft % 60).toString().padStart(2, '0');
         timerDisplay.textContent = `${minutes}:${seconds}`;
       }
 
-      // Escape HTML to prevent XSS
+      // Sanitize text to prevent XSS
       function escapeHTML(text) {
         return text.replace(/[&<>"']/g, function(m) {
           return {
@@ -869,6 +885,7 @@ if (!isset($_SESSION['email'])) {
 
     });
   </script>
+
 
 </body>
 

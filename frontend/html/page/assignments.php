@@ -409,94 +409,113 @@ if (!isset($_SESSION['email'])) {
 
   <script src="../../js/pages/sidebar.js"></script>
   <script>
+    // Wait until the entire HTML page is fully loaded before running this code
     document.addEventListener('DOMContentLoaded', () => {
-      const assignmentForm = document.getElementById('addAssignmentForm');
-      const assignmentsList = document.getElementById('assignmentsList');
-      const emptyState = document.getElementById('emptyState');
-      const filterBtns = document.querySelectorAll('.filter-btn');
 
-      // Load assignments from server
+      // Select and store references to important DOM elements
+      const assignmentForm = document.getElementById('addAssignmentForm'); // The form used to add new assignments
+      const assignmentsList = document.getElementById('assignmentsList'); // Where assignments will be displayed
+      const emptyState = document.getElementById('emptyState'); // Message shown when no assignments exist
+      const filterBtns = document.querySelectorAll('.filter-btn'); // Buttons to filter assignments (not fully used here)
+
+      // Function to load assignments from the backend server
       function fetchAssignments() {
+        // Send a GET request to our backend route to get all assignments
         fetch('../../../server/route/assignmentRoutes.php?action=get')
-          .then(res => res.json())
+          .then(res => res.json()) // Parse the response as JSON data
           .then(data => {
+            // After data is received, show it on the page
             renderAssignments(data);
           })
-          .catch(console.error);
+          .catch(console.error); // Show error in the browser console if something fails
       }
 
-      // Render assignments on page
+      // Function to display (render) assignments in the page
       function renderAssignments(assignments) {
-        assignmentsList.innerHTML = ''; // clear list
+        assignmentsList.innerHTML = ''; // Clear all existing assignment HTML inside the list
 
         if (assignments.length === 0) {
+          // If there are no assignments, show the empty message
           emptyState.style.display = 'block';
           return;
         }
+
+        // Hide the empty message since we now have assignments
         emptyState.style.display = 'none';
 
+        // Loop through each assignment and create a visual element for it
         assignments.forEach(assignment => {
           const assignmentEl = createAssignmentElement(assignment);
-          assignmentsList.appendChild(assignmentEl);
+          assignmentsList.appendChild(assignmentEl); // Add the new element to the list
         });
       }
 
+      // Function to create HTML structure for one assignment
       function createAssignmentElement(assignment) {
-        const div = document.createElement('div');
-        div.className = 'assignment-item';
-        div.dataset.id = assignment.id;
+        const div = document.createElement('div'); // Create a new div
+        div.className = 'assignment-item'; // Add class for styling
+        div.dataset.id = assignment.id; // Save the assignment ID in the element
 
-        const dueDateObj = new Date(assignment.due_date);
-        const today = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(today.getDate() + 1);
+        // Prepare due date display logic
+        const dueDateObj = new Date(assignment.due_date); // Convert due date string to Date object
+        const today = new Date(); // Get today's date
+        const tomorrow = new Date(); // Create another Date object for tomorrow
+        tomorrow.setDate(today.getDate() + 1); // Increase day by 1 for tomorrow
 
-        let dueText = '';
+        let dueText = ''; // This will store the display text for the due date
+
+        // Compare due date to today and tomorrow
         if (dueDateObj.toDateString() === today.toDateString()) {
           dueText = 'Due: Today';
         } else if (dueDateObj.toDateString() === tomorrow.toDateString()) {
           dueText = 'Due: Tomorrow';
         } else {
+          // Format date as something like "May 25"
           dueText = `Due: ${dueDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
         }
 
+        // Handle priority text and class (e.g., low, medium, high)
         const priorityClass = `priority-${assignment.priority}`;
-        const priorityText = assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1);
+        const priorityText = assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1); // capitalize first letter
 
+        // Create the HTML inside the assignment box using template strings
         div.innerHTML = `
-      <input type="checkbox" class="assignment-checkbox" ${assignment.completed ? 'checked' : ''}>
-      <div class="assignment-details">
-        <span class="assignment-title ${assignment.completed ? 'completed' : ''}">${assignment.title}</span>
-        <div class="assignment-meta">
-          <span>${assignment.subject || 'No subject'}</span>
-          <span class="assignment-due"><i class='bx bx-calendar'></i> ${assignment.completed ? 'Submitted' : dueText}</span>
+        <input type="checkbox" class="assignment-checkbox" ${assignment.completed ? 'checked' : ''}>
+        <div class="assignment-details">
+          <span class="assignment-title ${assignment.completed ? 'completed' : ''}">${assignment.title}</span>
+          <div class="assignment-meta">
+            <span>${assignment.subject || 'No subject'}</span>
+            <span class="assignment-due"><i class='bx bx-calendar'></i> ${assignment.completed ? 'Submitted' : dueText}</span>
+          </div>
         </div>
-      </div>
-      <span class="assignment-priority ${priorityClass}">${priorityText}</span>
-      <div class="assignment-actions">
-        <button class="action-btn edit-btn"><i class='bx bx-edit'></i></button>
-        <button class="action-btn delete-btn"><i class='bx bx-trash'></i></button>
-      </div>
-    `;
+        <span class="assignment-priority ${priorityClass}">${priorityText}</span>
+        <div class="assignment-actions">
+          <button class="action-btn edit-btn"><i class='bx bx-edit'></i></button>
+          <button class="action-btn delete-btn"><i class='bx bx-trash'></i></button>
+        </div>
+      `;
 
-        return div;
+        return div; // Return the created assignment element
       }
 
-      // Add new assignment via AJAX
+      // Handle when the assignment form is submitted
       assignmentForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Stop the form from refreshing the page
 
+        // Get values from input fields
         const title = document.getElementById('assignmentTitle').value.trim();
         const subject = document.getElementById('assignmentSubject').value.trim();
         const due_date = document.getElementById('assignmentDue').value;
         const priority = document.getElementById('assignmentPriority').value;
 
+        // Do not continue if title or due date is missing
         if (!title || !due_date) return;
 
+        // Send the new assignment to the backend using a POST request
         fetch('../../../server/route/assignmentRoutes.php?action=add', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json' // We're sending JSON data
             },
             body: JSON.stringify({
               title,
@@ -509,24 +528,25 @@ if (!isset($_SESSION['email'])) {
           .then(res => res.json())
           .then(response => {
             if (response.success) {
-              fetchAssignments();
-              assignmentForm.reset();
+              fetchAssignments(); // Reload the assignment list
+              assignmentForm.reset(); // Clear the form inputs
             }
           })
           .catch(console.error);
       });
 
-      // Assignment list event delegation (edit, delete, toggle complete)
+      // Handle clicks on assignments (edit, delete, checkbox toggle)
       assignmentsList.addEventListener('click', (e) => {
-        const target = e.target;
-        const assignmentEl = target.closest('.assignment-item');
+        const target = e.target; // What the user clicked on
+        const assignmentEl = target.closest('.assignment-item'); // Find the nearest parent assignment element
         if (!assignmentEl) return;
 
-        const id = assignmentEl.dataset.id;
+        const id = assignmentEl.dataset.id; // Get the assignment ID from the element
 
-        // Toggle complete
+        // User clicked on the checkbox to mark as complete/incomplete
         if (target.classList.contains('assignment-checkbox')) {
-          const completed = target.checked ? 1 : 0;
+          const completed = target.checked ? 1 : 0; // Convert checkbox state to 1 or 0
+
           fetch('../../../server/route/assignmentRoutes.php?action=toggle', {
               method: 'POST',
               headers: {
@@ -544,18 +564,18 @@ if (!isset($_SESSION['email'])) {
                 const titleEl = assignmentEl.querySelector('.assignment-title');
                 const dueEl = assignmentEl.querySelector('.assignment-due');
                 if (completed) {
-                  titleEl.classList.add('completed');
-                  dueEl.innerHTML = `<i class='bx bx-calendar'></i> Submitted`;
+                  titleEl.classList.add('completed'); // Add strikethrough style
+                  dueEl.innerHTML = `<i class='bx bx-calendar'></i> Submitted`; // Change due text
                 } else {
-                  titleEl.classList.remove('completed');
-                  // You can re-render due text properly if needed
+                  titleEl.classList.remove('completed'); // Remove strikethrough
+                  // You may optionally recalculate the due text again
                 }
               }
             })
             .catch(console.error);
         }
 
-        // Delete assignment
+        // User clicked the delete button
         if (target.closest('.delete-btn')) {
           fetch('../../../server/route/assignmentRoutes.php?action=delete', {
               method: 'POST',
@@ -570,21 +590,21 @@ if (!isset($_SESSION['email'])) {
             .then(res => res.json())
             .then(response => {
               if (response.success) {
-                fetchAssignments();
+                fetchAssignments(); // Refresh the list after deletion
               }
             })
             .catch(console.error);
         }
 
-        // Edit assignment
+        // User clicked the edit button
         if (target.closest('.edit-btn')) {
           const currentTitle = assignmentEl.querySelector('.assignment-title').textContent;
           const currentSubject = assignmentEl.querySelector('.assignment-meta > span:first-child').textContent;
-          const newTitle = prompt('Edit assignment title:', currentTitle);
-          const newSubject = prompt('Edit subject:', currentSubject);
+
+          const newTitle = prompt('Edit assignment title:', currentTitle); // Ask user to enter new title
+          const newSubject = prompt('Edit subject:', currentSubject); // Ask user to enter new subject
 
           if (newTitle && newTitle.trim() !== '') {
-            // Ideally, update backend as well
             fetch('../../../server/route/assignmentRoutes.php?action=update', {
                 method: 'POST',
                 headers: {
@@ -594,8 +614,8 @@ if (!isset($_SESSION['email'])) {
                   id,
                   title: newTitle.trim(),
                   subject: newSubject ? newSubject.trim() : '',
-                  due_date: assignmentEl.querySelector('.assignment-due').textContent, // You might want to get actual date from dataset or element attribute instead
-                  priority: 'medium', // optionally add UI for editing priority/due_date
+                  due_date: assignmentEl.querySelector('.assignment-due').textContent, // For demo purposes
+                  priority: 'medium', // Set as default, but can be dynamic
                   completed: assignmentEl.querySelector('.assignment-checkbox').checked ? 1 : 0,
                   action: 'update'
                 })
@@ -603,7 +623,7 @@ if (!isset($_SESSION['email'])) {
               .then(res => res.json())
               .then(response => {
                 if (response.success) {
-                  fetchAssignments();
+                  fetchAssignments(); // Refresh with updated assignment
                 }
               })
               .catch(console.error);
@@ -611,10 +631,11 @@ if (!isset($_SESSION['email'])) {
         }
       });
 
-      // Initial fetch
+      // Call the function once when page loads to fetch and display assignments
       fetchAssignments();
     });
   </script>
+
 </body>
 
 </html>
