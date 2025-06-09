@@ -5,7 +5,7 @@ namespace Controller; // This declares the namespace for the controller class
 session_start(); // Start the session in case we need to store session data later
 
 // Include the necessary PHP files for database connection and user model
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../model/user.php';
 
 use Config\Database; // Use the Database class from the Config namespace
